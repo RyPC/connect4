@@ -1,0 +1,41 @@
+
+body {
+    background-color: black;
+    color: white;
+}
+
+#board {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto auto auto;
+}
+
+#title {
+    text-align: center;
+    font-size: 50px;
+    padding: 0px;
+}
+
+#container {
+    padding-left: 25%;
+}
+
+.square {
+    background-color: black;
+    border: 2px solid white;
+    width: auto;
+    height: auto;
+    font-size: 0%;
+    float: left;
+    align-content: center;
+}
+.piece {
+    border-radius: 50%;
+    display: inline-block;
+    position: fixed;
+}
+.blue {
+    background-color: blue;
+}
+.red {
+    background-color: red;
+}
