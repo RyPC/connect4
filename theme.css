@@ -17,6 +17,7 @@ body {
 
 #container {
     padding-left: 25%;
+
 }
 
 .square {
@@ -27,11 +28,12 @@ body {
     font-size: 0%;
     float: left;
     align-content: center;
+    
 }
 .piece {
     border-radius: 50%;
     display: inline-block;
-    position: fixed;
+    position: absolute;
 }
 .blue {
     background-color: blue;
