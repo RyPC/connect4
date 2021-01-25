@@ -1,9 +1,9 @@
-const boardWidth = 1000;
+const boardWidth = Math.floor(window.innerWidth / 2);
 const squareLen = Math.floor(boardWidth / 7);
 var level = [5, 5, 5, 5, 5, 5, 5];
 //true - blue, false - red
 var turn = Math.random() > 0.5;
-const pieceSize = 100;
+const pieceSize = Math.floor(boardWidth / 10);
 var board = [[0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0],
@@ -13,7 +13,7 @@ var board = [[0, 0, 0, 0, 0, 0, 0],
 var won = false;
 
 function start() {
-
+    "use strict";
     createBoxes();
 
     document.getElementById("board").style.width = boardWidth + "px";
@@ -22,7 +22,7 @@ function start() {
 }
 
 function createBoxes() {
-
+    "use strict";
     var html = "";
 
     for (var i = 0; i < 6; i++) {
@@ -36,7 +36,8 @@ function createBoxes() {
 }
 
 function move(row, col) {
-    if (level[col] < 0 || won) return;
+    "use strict";
+    if (level[col] < 0 || won) {return;}
     document.getElementById(`row${level[col]}col${col}`).innerHTML = `<div class="piece ${turn ? "blue" : "red"}" style="height: ${pieceSize}px; width: ${pieceSize}px;"></div>`;
     board[level[col]][col] = turn ? 1 : -1;
     turn = !turn;
@@ -45,34 +46,36 @@ function move(row, col) {
 }
 
 function checkWin() {
-    for (var i = 5; i >= 0; i--) {
-        var row = board[i];
-        for (var j = 0; j < 4; j++) {
-            if (row[j] != 0 && row[j] === row[j + 1] && row[j] === row[j + 2] && row[j] === row[j + 3]) {
+    "use strict";
+    var i, j, row;
+    for (i = 5; i >= 0; i--) {
+        row = board[i];
+        for (j = 0; j < 4; j++) {
+            if (row[j] !== 0 && row[j] === row[j + 1] && row[j] === row[j + 2] && row[j] === row[j + 3]) {
                 win(row[j] === 1 ? "Blue" : "Red");
                 return;
             }
             if (i > 2) {
-                if (row[j] != 0 && row[j] === board[i - 1][j + 1] && row[j] === board[i - 2][j + 2] && row[j] === board[i - 3][j + 3]) {
+                if (row[j] !== 0 && row[j] === board[i - 1][j + 1] && row[j] === board[i - 2][j + 2] && row[j] === board[i - 3][j + 3]) {
                     win(row[j] === 1 ? "Blue" : "Red");
                     return;
                 }
             }
             if(i < 3) {
-                if (row[j] != 0 && row[j] === board[i + 1][j + 1] && row[j] === board[i + 2][j + 2] && row[j] === board[i + 3][j + 3]) {
+                if (row[j] !== 0 && row[j] === board[i + 1][j + 1] && row[j] === board[i + 2][j + 2] && row[j] === board[i + 3][j + 3]) {
                     win(row[j] === 1 ? "Blue" : "Red");
                     return;
                 }
             }
-            if (row[j] != 0 && row[j] === row[j + 1] && row[j] === row[j + 2] && row[j] === row[j + 3]) {
+            if (row[j] !== 0 && row[j] === row[j + 1] && row[j] === row[j + 2] && row[j] === row[j + 3]) {
                 win(row[j] === 1 ? "Blue" : "Red");
                 return;
             }
         }
     }
-    for (var i = 0; i < 3; i++) {
-        for (var j = 0; j < 7; j++) {
-            if (board[i][j] != 0 && board[i][j] === board[i + 1][j] && board[i][j] === board[i + 2][j] && board[i][j] === board[i + 3][j]) {
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 7; j++) {
+            if (board[i][j] !== 0 && board[i][j] === board[i + 1][j] && board[i][j] === board[i + 2][j] && board[i][j] === board[i + 3][j]) {
                 win(row[j] === 1 ? "Blue" : "Red");
                 return;
             }
@@ -81,6 +84,7 @@ function checkWin() {
 }
 
 function win(winner) {
+    "use strict";
     alert(`${winner} Wins!!`);
     won = true;
 }
