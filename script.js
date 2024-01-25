@@ -1,9 +1,7 @@
-const boardWidth = Math.floor(window.innerWidth / 2);
-const squareLen = Math.floor(boardWidth / 7);
+
 var level = [5, 5, 5, 5, 5, 5, 5];
 //true - blue, false - red
 var turn = Math.random() > 0.5;
-const pieceSize = Math.floor(boardWidth / 10);
 var board = [[0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0],
@@ -15,10 +13,6 @@ var won = false;
 function start() {
     "use strict";
     createBoxes();
-
-    document.getElementById("board").style.width = boardWidth + "px";
-    document.getElementById("board").style.height = Math.floor(boardWidth / 7 * 6).toString() + "px";
-
 }
 
 function createBoxes() {
@@ -27,7 +21,7 @@ function createBoxes() {
 
     for (var i = 0; i < 6; i++) {
         for (var j = 0; j < 7; j++) {
-            html+= `<div onclick="move(${j});" style="padding:${(1 - (pieceSize / squareLen)) * 50}%; width:${squareLen}; height:${squareLen}" id="row${i}col${j}" class="square"></div>`;
+            html+= `<div onclick="move(${j});" id="row${i}col${j}" class="square"></div>`;
         }
     }
 
@@ -40,7 +34,7 @@ function move(col) {
     // don't let move if invalid move or game is over
     if (level[col] < 0 || won) {return;}
 
-    document.getElementById(`row${level[col]}col${col}`).innerHTML = `<div class="piece ${turn ? "blue" : "red"}" style="height: ${pieceSize}px; width: ${pieceSize}px;"></div>`;
+    document.getElementById(`row${level[col]}col${col}`).innerHTML = `<div class="piece ${turn ? "blue" : "red"}"></div>`;
     board[level[col]][col] = turn ? 1 : -1;
 
     checkWin(level[col], col);

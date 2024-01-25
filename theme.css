@@ -6,6 +6,8 @@ body {
 
 #board {
     display: grid;
+    width: min(50vh, 50vw);
+    height: calc(min(50vh, 50vw) / 7 * 6);
     grid-template-columns: auto auto auto auto auto auto auto;
 }
 
@@ -23,17 +25,21 @@ body {
 .square {
     background-color: black;
     border: 2px solid white;
-    width: auto;
-    height: auto;
     font-size: 0%;
     float: left;
     align-content: center;
-    
+
+    width: calc(50vw / 7);
+    height: calc(50vw / 7);
 }
 .piece {
     border-radius: 50%;
     display: inline-block;
     position: absolute;
+
+    width: calc(50vw / 7 * 3 / 4);
+    height: calc(50vw / 7 * 3 / 4);
+    transform: translate(calc(50vw / 7 / 8), calc(50vw / 7 / 8));
 }
 .blue {
     background-color: blue;
