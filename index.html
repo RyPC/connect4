@@ -7,12 +7,33 @@
         Connect 4
     </title>
 </head>
-<body onload="start()">
+<body>
+
+    <div id="popup-container">
+        <div class="popup">
+            <h1>Game mode</h1>
+            <div id="buttons-container">
+                <div class="single-button-container">
+                    <div onclick="start(1)" class="popup-button" id="one-player-button">
+                        <h2>One Player</h2>
+                    </div>
+                </div>
+                <div class="single-button-container">
+                    <div onclick="start(2)" class="popup-button" id="two-player-button">
+                        <h2>Two Players</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <p id="title">
         <b>Connect 4</b>
     </p>
     <div id="container">
         <div id="board"></div>
     </div>
+
+
 </body>
 </html>

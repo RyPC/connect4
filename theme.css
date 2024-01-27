@@ -1,4 +1,6 @@
-
+html {
+    box-sizing: border-box;
+}
 body {
     background-color: black;
     color: white;
@@ -9,6 +11,10 @@ body {
     width: min(50vh, 50vw);
     height: calc(min(50vh, 50vw) / 7 * 6);
     grid-template-columns: auto auto auto auto auto auto auto;
+
+    opacity: 0;
+    visibility: hidden;
+    transition: all 1.5s ease;
 }
 
 #title {
@@ -19,7 +25,6 @@ body {
 
 #container {
     padding-left: 25%;
-
 }
 
 .square {
@@ -35,15 +40,104 @@ body {
 .piece {
     border-radius: 50%;
     display: inline-block;
-    position: absolute;
+    box-shadow: inset 0px 0px 10px 5px white;
 
     width: calc(50vw / 7 * 3 / 4);
     height: calc(50vw / 7 * 3 / 4);
     transform: translate(calc(50vw / 7 / 8), calc(50vw / 7 / 8));
+
+    opacity: 0; /* for ease animation */
+    transition: all 1.5s ease;
 }
 .blue {
-    background-color: blue;
+    background-color: #A1A1D4;
+    box-shadow: 0px 0px 30px 5px #A1A1D4;
 }
 .red {
-    background-color: red;
+    background-color: #FD8A8A;
+    box-shadow: 0px 0px 30px 5px #FD8A8A;
+}
+
+#row0col0 {
+    border-radius: 10% 0 0 0;
+}
+#row5col0 {
+    border-radius: 0 0 0 10%;
+}
+#row0col6 {
+    border-radius: 0 10% 0 0;
+}
+#row5col6 {
+    border-radius: 0 0 10% 0;
+}
+
+#popup-container {
+    padding-left: 33vw;
+    padding-top: 10vh;
+    position: absolute;
+
+    transition: all 0.5s ease;
+}
+.popup {
+    position: fixed;
+    background-color: black;
+    /* opacity: 75%; */
+    border: 2px white solid;
+    border-radius: 10%;
+    color: white;
+    /* visibility: hidden; */
+
+    width: 33vw;
+    height: min(25vw, 75vh);
+
+    text-align: center;
+    justify-content: center;
+    display: block;
+}
+#buttons-container {
+    width: 33vw;
+    height: calc(25vw - 90px);
+    display: flex;
+}
+.single-button-container {
+    height: calc(33vw / 2);
+    width: calc(33vw / 4);
+
+    flex: 1;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* float: left; */
+}
+.popup-button {
+    height: calc(33vw / 4);
+    width: calc(33vw / 3);
+
+    border-radius: 15%;
+    
+    transition: all 0.5s ease;
+}
+.popup-button:hover {
+    transform: translateY(-10px);
+}
+.popup-button:active {
+    transform: translateY(0px);
+}
+
+#one-player-button {
+    background-color: #FD8A8A;
+    box-shadow: 0px 0px 30px 5px #FD8A8A;
+}
+
+#two-player-button {
+    background-color: #9EA1D4;
+    box-shadow: 0px 0px 30px 5px #9EA1D4;
+}
+
+
+h2 {
+    text-shadow: 0 0 2px white;
+    user-select: none;
 }

@@ -1,18 +1,47 @@
 
 var level = [5, 5, 5, 5, 5, 5, 5];
 //true - blue, false - red
-var turn = Math.random() > 0.5;
-var board = [[0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0],
-[0, 0, 0, 0, 0, 0, 0]];
+var turn = false;
+var board, players;
 var won = false;
 
-function start() {
+function start(p) {
     "use strict";
+    players = p;
+
+    resetBoard();
     createBoxes();
+
+    hidePopups();
+    showBoard();
+    
+    
+}
+
+function hidePopups() {
+    document.getElementById("popup-container").style.visibility = "hidden";
+    document.getElementById("popup-container").style.opacity = "0";
+
+    document.getElementById("one-player-button").style.opacity = "0";
+    document.getElementById("two-player-button").style.opacity = "0";
+
+    // disable buttons
+    document.getElementById("one-player-button").onclick = "";
+    document.getElementById("two-player-button").onclick = "";
+}
+
+function showBoard() {
+    document.getElementById("board").style.opacity = "1";
+    document.getElementById("board").style.visibility = "visible";
+}
+
+function resetBoard() {
+    board = [[0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0]];
 }
 
 function createBoxes() {
@@ -32,22 +61,42 @@ function createBoxes() {
 function move(col) {
     "use strict";
     // don't let move if invalid move or game is over
-    if (level[col] < 0 || won) {return;}
+    if (level[col] < 0 || won) { return; }
 
-    document.getElementById(`row${level[col]}col${col}`).innerHTML = `<div class="piece ${turn ? "blue" : "red"}"></div>`;
+    // don't let move for the computer
+    if (players == 1 && turn == -1) { return; }
+
+    // add piece to board
+    document.getElementById(`row${level[col]}col${col}`).innerHTML = `<div style="" class="piece ${turn ? "blue" : "red"}" id="row${level[col]}col${col}-piece"></div>`;
     board[level[col]][col] = turn ? 1 : -1;
+
+    document.getElementById(`row${level[col]}col${col}-piece`).style.opacity = 1;
 
     checkWin(level[col], col);
 
+    // set up for next turn
     turn = !turn;
     level[col]--;
+
+    // move for the computer
+    if (players == 1) {
+        aiMove();
+    }
 }
 
+function aiMove() {
+    turn = !turn;
+    level[col]--;
+    checkWin();
+}
+
+// returns if a given coordinate is in bounds
 function inBounds(row, col) {
     "use strict"
     return !(row > 5 || row < 0 || col > 6 || col < 0);
 }
 
+// checks if a player has won
 function checkWin(row, col) {
     const directions = [[1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]]
     for (var i = 0; i < directions.length; i++) {
@@ -60,6 +109,7 @@ function checkWin(row, col) {
     }
 }
 
+// checkWin recursive helper
 // row = row of placed piece
 // col = column of placed piece
 // x = increased col to check
@@ -84,4 +134,6 @@ function win(winner) {
     "use strict";
     alert(`${winner} Wins!!`);
     won = true;
+
+    // add popup to play again
 }
