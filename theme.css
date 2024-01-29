@@ -44,10 +44,12 @@ body {
 
     width: calc(50vw / 7 * 3 / 4);
     height: calc(50vw / 7 * 3 / 4);
-    transform: translate(calc(50vw / 7 / 8), calc(50vw / 7 / 8));
+
+    /*   translate set using js   */ 
+    /* transform: translate(calc(50vw / 7 / 8), calc(calc(50vw / 7 / 8))); */
 
     opacity: 0; /* for ease animation */
-    transition: all 1.5s ease;
+    transition: all 0.5s ease;
 }
 .blue {
     background-color: #A1A1D4;

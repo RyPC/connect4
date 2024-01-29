@@ -50,7 +50,12 @@ function createBoxes() {
 
     for (var i = 0; i < 6; i++) {
         for (var j = 0; j < 7; j++) {
-            html+= `<div onclick="move(${j});" id="row${i}col${j}" class="square"></div>`;
+            html+= `<div onclick="move(${j});" id="row${i}col${j}" class="square">
+                        <div 
+                            style="transform: translate(calc(50vw / 7 / 8), calc(50vw / 7 * ${-i * 1 + 0.125}));" 
+                            class="piece" id="row${i}col${j}-piece">
+                        </div>
+                    </div>`;
         }
     }
 
@@ -67,10 +72,11 @@ function move(col) {
     if (players == 1 && turn == -1) { return; }
 
     // add piece to board
-    document.getElementById(`row${level[col]}col${col}`).innerHTML = `<div style="" class="piece ${turn ? "blue" : "red"}" id="row${level[col]}col${col}-piece"></div>`;
-    board[level[col]][col] = turn ? 1 : -1;
-
+    document.getElementById(`row${level[col]}col${col}-piece`).classList.add(turn ? "blue" : "red");
     document.getElementById(`row${level[col]}col${col}-piece`).style.opacity = 1;
+    document.getElementById(`row${level[col]}col${col}-piece`).style.transform = "translate(calc(50vw / 7 / 8), calc(50vw / 7 / 8))";
+    
+    board[level[col]][col] = turn ? 1 : -1;    
 
     checkWin(level[col], col);
 
