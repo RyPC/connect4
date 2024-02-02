@@ -1,3 +1,4 @@
+//  script.js
 
 var level = [5, 5, 5, 5, 5, 5, 5];
 //true - blue, false - red
@@ -46,10 +47,10 @@ function resetBoard() {
 
 function createBoxes() {
     "use strict";
-    var html = "";
+    let html = "";
 
-    for (var i = 0; i < 6; i++) {
-        for (var j = 0; j < 7; j++) {
+    for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 7; j++) {
             html+= `<div onclick="move(${j});" id="row${i}col${j}" class="square">
                         <div 
                             style="transform: translate(calc(50vw / 7 / 8), calc(50vw / 7 * ${-i * 1 + 0.125}));" 
@@ -71,14 +72,13 @@ function move(col) {
     // don't let move for the computer
     if (players == 1 && turn == -1) { return; }
 
-    // add piece to board
-    document.getElementById(`row${level[col]}col${col}-piece`).classList.add(turn ? "blue" : "red");
-    document.getElementById(`row${level[col]}col${col}-piece`).style.opacity = 1;
-    document.getElementById(`row${level[col]}col${col}-piece`).style.transform = "translate(calc(50vw / 7 / 8), calc(50vw / 7 / 8))";
-    
-    board[level[col]][col] = turn ? 1 : -1;    
+    add_piece_to_board(col, (turn ? "blue" : "red"));
 
-    checkWin(level[col], col);
+    // check if any player has won
+    if (checkWin(level[col], col)) {
+        win(level[col], col);
+        return;
+    }
 
     // set up for next turn
     turn = !turn;
@@ -90,10 +90,14 @@ function move(col) {
     }
 }
 
-function aiMove() {
-    turn = !turn;
-    level[col]--;
-    checkWin();
+function add_piece_to_board(col, color) {
+    // add piece to visual board
+    document.getElementById(`row${level[col]}col${col}-piece`).classList.add(color);
+    document.getElementById(`row${level[col]}col${col}-piece`).style.opacity = 1;
+    document.getElementById(`row${level[col]}col${col}-piece`).style.transform = "translate(calc(50vw / 7 / 8), calc(50vw / 7 / 8))";
+    
+    // add piece to board in code
+    board[level[col]][col] = turn ? 1 : -1;    
 }
 
 // returns if a given coordinate is in bounds
@@ -104,42 +108,311 @@ function inBounds(row, col) {
 
 // checks if a player has won
 function checkWin(row, col) {
-    const directions = [[1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]]
-    for (var i = 0; i < directions.length; i++) {
+    const directions = [[1, -1], [1, 0], [1, 1], [0, 1]];
+    for (let i = 0; i < directions.length; i++) {
         // check for in-bounds in each direction before checking
-        if (inBounds(row + (directions[i][1] * 3), col + (directions[i][0] * 3)) && 
-            checkWinCondition(row, col, directions[i][0], directions[i][1], 1)) {
-            win(board[row][col] === 1 ? "Blue" : "Red");
-            return;
+        if (checkWinCondition(row, col, directions[i][0], directions[i][1])) {
+            return true;
         }
     }
+    return false;
 }
 
-// checkWin recursive helper
+// checkWin helper
 // row = row of placed piece
 // col = column of placed piece
 // x = increased col to check
 // y = increased row to check
-// i = how far from placed piece
-function checkWinCondition(row, col, x, y, i) {
+function checkWinCondition(row, col, x, y) {
     "use strict";
-    if (i >= 4) {
-        return true;
+    let originalPiece = board[row][col];
+
+    // booleans on if to explore in either direction
+    let pos_explore = true;
+    let neg_explore = true;
+
+    let pos_value = 0;
+    let neg_value = 0;
+
+    // extend in opposite directions to find a win
+    for (let i = 1; i <= 3 && (pos_explore || neg_explore); i++) {
+        // check pos piece and potentially add
+        if (pos_explore && inBounds(row + (y * i), col + (x * i))) {
+            if (board[row + (y * i)][col + (x * i)] == originalPiece) {
+                pos_value++;
+            }
+            else {
+                pos_explore = false;
+            }
+        }
+        else {
+            pos_explore = false;
+        }
+
+
+        if (neg_explore && inBounds(row - (y * i), col - (x * i))) {
+            if (neg_explore && board[row - (y * i)][col - (x * i)] == originalPiece) {
+                neg_value++;
+            }
+            else {
+                neg_explore = false;
+            }
+        }
+        else {
+            neg_explore = false;
+        }
     }
 
-    var piece = board[row + (y * i)][col + (x * i)];
-    var originalPiece = board[row][col];
-    if (piece != originalPiece) {
-        return false;
-    }
+    return ((pos_value + neg_value) >= 3);
 
-    return checkWinCondition(row, col, x, y, (i + 1));
 }
 
-function win(winner) {
+function win(row, col) {
     "use strict";
-    alert(`${winner} Wins!!`);
     won = true;
 
+    // highlight winning combination
+
     // add popup to play again
+    showPopups();
+}
+
+function showPopups() {
+    document.getElementById("popup-container").style.visibility = "visible";
+    document.getElementById("popup-container").style.opacity = "0.5";
+
+    document.getElementById("one-player-button").style.opacity = "1";
+    document.getElementById("two-player-button").style.opacity = "1";
+
+    // disable buttons
+    document.getElementById("one-player-button").onclick = "start(1)";
+    document.getElementById("two-player-button").onclick = "start(2)";
+}
+
+
+function aiMove() {
+    let col = find_best_move(4);
+
+    add_piece_to_board(col, "blue")
+
+    // check if any player has won
+    if (checkWin(level[col], col)) {
+        win(level[col], col);
+    }
+
+    turn = !turn;
+    level[col]--;
+}
+
+
+// Finds the best move for the computer and returns a column and its associated value
+function find_best_move(depth) {
+    let alpha = -Infinity;
+    let beta = Infinity;
+    return find_best_max_move(alpha, beta, depth)[0];
+}
+
+// Finds the best move for MAX (computer) player and returns [move, weight]
+function find_best_max_move(alpha, beta, depth) {
+    if (depth == 0) {
+        // return heuristic score of board
+        return [-1, calculate_score()];
+    }
+
+    // sets the first move to column 0
+    let best_col = -1;
+    let max_val = -Infinity;
+
+    // find the best score
+    for (let i of [3, 2, 4, 1, 5, 0, 6]) {
+        if (alpha >= beta) {
+            return [best_col, max_val];
+        }
+        if (board[0][i] != 0) {
+            continue;
+        }
+
+        // execute move temporarily
+        board[level[i]][i] = 1;
+        if (checkWin(level[i], i)) {
+            // unexecute move
+            board[level[i]][i] = 0;
+            
+            return [i, Infinity];
+        }
+        level[i]--;
+        turn = !turn;
+
+
+        let move_val = find_best_min_move(alpha, beta, depth - 1)[1];
+        if (move_val >= max_val) {
+            best_col = i;
+            max_val = move_val;
+            if (max_val >= alpha) {
+                alpha = max_val;
+            }
+        }
+
+        // unexecute move
+        level[i]++;
+        board[level[i]][i] = 0;
+        turn = !turn;
+    }
+
+    if (best_col == -1) {
+        return 0;
+    }
+
+    return [best_col, max_val];
+
+}
+
+
+// Finds the best move for MIN (user) player and returns [move, weight]
+function find_best_min_move(alpha, beta, depth) {
+    if (depth == 0) {
+        // return heuristic score of board
+        return [-1, calculate_score()];
+    }
+
+    // sets the first move to column 0
+    let best_col = -1;
+    let min_val = Infinity;
+
+    // find the best score
+    for (let i of [3, 2, 4, 1, 5, 0, 6]) {
+        if (alpha >= beta) {
+            return [best_col, min_val];
+        }
+        if (board[0][i] != 0) {
+            continue;
+        }
+
+        // execute move temporarily
+        board[level[i]][i] = -1;
+        if (checkWin(level[i], i)) {
+            // unexecute move
+            board[level[i]][i] = 0;
+            
+            return [i, -Infinity];
+        }
+        level[i]--;
+        turn = !turn;
+
+
+        let move_val = find_best_max_move(alpha, beta, depth - 1)[1];
+        if (move_val <= min_val) {
+            best_col = i;
+            min_val = move_val;
+            if (min_val <= beta) {
+                beta = min_val;
+            }
+        }
+
+        // unexecute move
+        level[i]++;
+        board[level[i]][i] = 0;
+        turn = !turn;
+    }
+
+    if (best_col == -1) {
+        return 0;
+    }
+
+    return [best_col, min_val];
+
+}
+
+
+// calculates current game score
+function calculate_score() {
+    const directions = [[1, -1], [1, 0], [1, 1], [0, 1]];
+
+    let score = 0;
+    for (let row = 0; row <= 5; row++) {
+        for (let col = 0; col <= 6; col++) {
+            if (board[row][col] == 0) {
+                continue;
+            }
+
+            for (let i = 0; i < directions.length; i++) {
+                add = score_possible(row, col, directions[i][0], directions[i][1], 1);
+                // console.log(directions[i]);
+                // console.log(`row: ${row}, col: ${col}`);
+                // console.log(`added ${add}`);
+                // console.log("");
+                score+= add;
+            }
+
+        }
+    }
+    return score;
+}
+
+// calculate_score recursive helper
+function score_possible(row, col, x, y) {
+    "use strict";
+    let originalPiece = board[row][col];
+
+    // booleans on if to explore in either direction
+    let pos_explore = true;
+    let pos_explore_pot = true;
+    let neg_explore = true;
+    let neg_explore_pot = true;
+
+    let pos_value = 0;
+    let pos_value_pot = 0;
+    let neg_value = 0;
+    let neg_value_pot = 0;
+
+    // extend in opposite directions to find a win
+    for (let i = 1; i <= 3 && (pos_explore || neg_explore); i++) {
+        // check pos piece and potentially add
+        if (pos_explore_pot && inBounds(row + (y * i), col + (x * i))) {
+            if (pos_explore && board[row + (y * i)][col + (x * i)] == originalPiece) {
+                pos_value++;
+                pos_value_pot++;
+            }
+            else if (board[row + (y * i)][col + (x * i)] != -originalPiece) {
+                pos_value_pot++;
+                pos_explore = false;
+            }
+            else {
+                pos_explore = false;
+                pos_explore_pot = false;
+            }
+        }
+        else {
+            pos_explore = false;
+        }
+
+
+        if (neg_explore_pot && inBounds(row - (y * i), col - (x * i))) {
+            if (neg_explore && board[row - (y * i)][col - (x * i)] == originalPiece) {
+                neg_value++;
+                neg_value_pot++;
+            }
+            else if (board[row - (y * i)][col - (x * i)] != -originalPiece) {
+                neg_value_pot++;
+                neg_explore = false;
+            }
+            else {
+                neg_explore = false;
+                neg_explore_pot = false;
+            }
+        }
+        else {
+            neg_explore = false;
+        }
+    }
+
+    let total = 0;
+    if (pos_value_pot + neg_explore_pot + 1 >= 4) {
+        total+= (pos_value + neg_value + 1) * 6;
+    }
+    total+= pos_value_pot + neg_value_pot + 1;
+    total+= (pos_value + neg_value + 1) * 2;
+    
+
+    return board[row][col] * total;
 }
