@@ -60,7 +60,7 @@ function createBoxes() {
         }
     }
 
-    document.getElementById("board").innerHTML+= html;
+    document.getElementById("board").innerHTML = html;
     
 }
 
@@ -170,23 +170,41 @@ function checkWinCondition(row, col, x, y) {
 function win(row, col) {
     "use strict";
     won = true;
+    let winner = board[row][col] == 1 ? "Blue" : "Red";
 
     // highlight winning combination
+    let winning_pieces = document.getElementsByClassName(winner.toLowerCase());
+    console.log(winning_pieces);
+    for (let i = 0; i < winning_pieces.length; i++) {
+        // winning_pieces[i].classList.remove("red");
+        console.log("hi");
+    }
+    // hide non-winning combination
+
+
 
     // add popup to play again
+    document.getElementById("popup-header").innerHTML = `${winner} Wins!!!`
+    document.getElementById("popup-header").style.color = winner === "Red" ? "#FD8A8A" : "#9EA1D4";
+
     showPopups();
 }
 
 function showPopups() {
+    document.getElementById("popup-container").style.transition = "all 4.5s ease";
     document.getElementById("popup-container").style.visibility = "visible";
-    document.getElementById("popup-container").style.opacity = "0.5";
+    document.getElementById("popup-container").style.opacity = "0.9";
 
-    document.getElementById("one-player-button").style.opacity = "1";
-    document.getElementById("two-player-button").style.opacity = "1";
+    document.getElementById("one-player-button").style.opacity = "0.9";
+    document.getElementById("two-player-button").style.opacity = "0.9";
 
     // disable buttons
     document.getElementById("one-player-button").onclick = "start(1)";
     document.getElementById("two-player-button").onclick = "start(2)";
+}
+
+function find_winning_combination() {
+    
 }
 
 
@@ -225,9 +243,11 @@ function find_best_max_move(alpha, beta, depth) {
 
     // find the best score
     for (let i of [3, 2, 4, 1, 5, 0, 6]) {
+        // pruning
         if (alpha >= beta) {
             return [best_col, max_val];
         }
+        // skip columns that are full
         if (board[0][i] != 0) {
             continue;
         }
@@ -281,9 +301,11 @@ function find_best_min_move(alpha, beta, depth) {
 
     // find the best score
     for (let i of [3, 2, 4, 1, 5, 0, 6]) {
+        // pruning
         if (alpha >= beta) {
             return [best_col, min_val];
         }
+        // skip columns that are full
         if (board[0][i] != 0) {
             continue;
         }
@@ -407,11 +429,13 @@ function score_possible(row, col, x, y) {
     }
 
     let total = 0;
-    if (pos_value_pot + neg_explore_pot + 1 >= 4) {
-        total+= (pos_value + neg_value + 1) * 6;
+    if (pos_value + neg_value + 1 >= 4) {
+        return board[row][col] * Infinity;
+    }
+    if (pos_value_pot + neg_value_pot + 1 >= 4) {
+        total+= ((pos_value + neg_value + 1) * 3) ** 2;
     }
     total+= pos_value_pot + neg_value_pot + 1;
-    total+= (pos_value + neg_value + 1) * 2;
     
 
     return board[row][col] * total;

@@ -14,7 +14,7 @@ body {
 
     opacity: 0;
     visibility: hidden;
-    transition: all 1.5s ease;
+    transition: all 2.5s ease;
 }
 
 #title {
@@ -25,6 +25,10 @@ body {
 
 #container {
     padding-left: 25%;
+}
+
+.popup-header {
+    color: white;
 }
 
 .square {
