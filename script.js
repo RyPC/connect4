@@ -371,16 +371,14 @@ function calculate_score() {
     return score;
 }
 
-// calculate_score recursive helper
+// calculate_score for individual square/"scoring direction"
 function score_possible(row, col, x, y) {
     "use strict";
     let originalPiece = board[row][col];
 
     // booleans on if to explore in either direction
     let pos_explore = true;
-    let pos_explore_pot = true;
     let neg_explore = true;
-    let neg_explore_pot = true;
 
     let pos_value = 0;
     let pos_value_pot = 0;
@@ -389,42 +387,36 @@ function score_possible(row, col, x, y) {
 
     // extend in opposite directions to find a win
     for (let i = 1; i <= 3 && (pos_explore || neg_explore); i++) {
-        // check pos piece and potentially add
-        if (pos_explore_pot && inBounds(row + (y * i), col + (x * i))) {
-            if (pos_explore && board[row + (y * i)][col + (x * i)] == originalPiece) {
+        // check pos piece valid
+        if (pos_explore && inBounds(row + (y * i), col + (x * i))) {
+            // if same color, add many points
+            if (board[row + (y * i)][col + (x * i)] == originalPiece) {
                 pos_value++;
                 pos_value_pot++;
             }
-            else if (board[row + (y * i)][col + (x * i)] != -originalPiece) {
+            // if empty, add some points
+            else if (board[row + (y * i)][col + (x * i)] == 0) {
                 pos_value_pot++;
-                pos_explore = false;
             }
             else {
                 pos_explore = false;
-                pos_explore_pot = false;
             }
         }
-        else {
-            pos_explore = false;
-        }
 
-
-        if (neg_explore_pot && inBounds(row - (y * i), col - (x * i))) {
-            if (neg_explore && board[row - (y * i)][col - (x * i)] == originalPiece) {
+        // check neg piece valid
+        if (neg_explore && inBounds(row - (y * i), col - (x * i))) {
+            // if same color, add many points
+            if (board[row - (y * i)][col - (x * i)] == originalPiece) {
                 neg_value++;
                 neg_value_pot++;
             }
-            else if (board[row - (y * i)][col - (x * i)] != -originalPiece) {
+            // if empty, add some points
+            else if (board[row - (y * i)][col - (x * i)] == 0) {
                 neg_value_pot++;
-                neg_explore = false;
             }
             else {
                 neg_explore = false;
-                neg_explore_pot = false;
             }
-        }
-        else {
-            neg_explore = false;
         }
     }
 
