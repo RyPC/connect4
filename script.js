@@ -151,7 +151,7 @@ function checkWinCondition(row, col, x, y) {
 
 
         if (neg_explore && inBounds(row - (y * i), col - (x * i))) {
-            if (neg_explore && board[row - (y * i)][col - (x * i)] == originalPiece) {
+            if (board[row - (y * i)][col - (x * i)] == originalPiece) {
                 neg_value++;
             }
             else {
@@ -163,7 +163,7 @@ function checkWinCondition(row, col, x, y) {
         }
     }
 
-    return ((pos_value + neg_value) >= 3);
+    return ((pos_value + neg_value + 1) >= 4);
 
 }
 
@@ -174,10 +174,8 @@ function win(row, col) {
 
     // highlight winning combination
     let winning_pieces = document.getElementsByClassName(winner.toLowerCase());
-    console.log(winning_pieces);
     for (let i = 0; i < winning_pieces.length; i++) {
         // winning_pieces[i].classList.remove("red");
-        console.log("hi");
     }
     // hide non-winning combination
 
@@ -243,10 +241,11 @@ function find_best_max_move(alpha, beta, depth) {
 
     // find the best score
     for (let i of [3, 2, 4, 1, 5, 0, 6]) {
-        // pruning
+        // alpha-beta pruning
         if (alpha >= beta) {
             return [best_col, max_val];
         }
+
         // skip columns that are full
         if (board[0][i] != 0) {
             continue;
@@ -257,8 +256,7 @@ function find_best_max_move(alpha, beta, depth) {
         if (checkWin(level[i], i)) {
             // unexecute move
             board[level[i]][i] = 0;
-            
-            return [i, Infinity];
+            return [i, (100000 * depth)];
         }
         level[i]--;
         turn = !turn;
@@ -268,9 +266,9 @@ function find_best_max_move(alpha, beta, depth) {
         if (move_val >= max_val) {
             best_col = i;
             max_val = move_val;
-            if (max_val >= alpha) {
-                alpha = max_val;
-            }
+        }
+        if (move_val > alpha) {
+            alpha = move_val;
         }
 
         // unexecute move
@@ -301,10 +299,11 @@ function find_best_min_move(alpha, beta, depth) {
 
     // find the best score
     for (let i of [3, 2, 4, 1, 5, 0, 6]) {
-        // pruning
+        // alpha-beta pruning
         if (alpha >= beta) {
             return [best_col, min_val];
         }
+        
         // skip columns that are full
         if (board[0][i] != 0) {
             continue;
@@ -315,8 +314,7 @@ function find_best_min_move(alpha, beta, depth) {
         if (checkWin(level[i], i)) {
             // unexecute move
             board[level[i]][i] = 0;
-            
-            return [i, -Infinity];
+            return [i, (-100000 * depth)];
         }
         level[i]--;
         turn = !turn;
@@ -326,9 +324,9 @@ function find_best_min_move(alpha, beta, depth) {
         if (move_val <= min_val) {
             best_col = i;
             min_val = move_val;
-            if (min_val <= beta) {
-                beta = min_val;
-            }
+        }
+        if (move_val < beta) {
+            beta = move_val;
         }
 
         // unexecute move
