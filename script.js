@@ -1,10 +1,14 @@
 //  script.js
 
-var level = [5, 5, 5, 5, 5, 5, 5];
+const SEARCH_DEPTH = 5;
+const SEARCH_DIRECTIONS = [[1, -1], [1, 0], [1, 1], [0, 1]];
+
 //true - blue, false - red
 var turn = false;
 var board, players;
+var level;
 var won = false;
+var canMove;
 
 function start(p) {
     "use strict";
@@ -19,6 +23,10 @@ function start(p) {
     
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function hidePopups() {
     document.getElementById("popup-container").style.visibility = "hidden";
     document.getElementById("popup-container").style.opacity = "0";
@@ -27,8 +35,7 @@ function hidePopups() {
     document.getElementById("two-player-button").style.opacity = "0";
 
     // disable buttons
-    document.getElementById("one-player-button").onclick = "";
-    document.getElementById("two-player-button").onclick = "";
+    document.getElementById("popup-container").style.pointerEvents = "none";
 }
 
 function showBoard() {
@@ -43,6 +50,14 @@ function resetBoard() {
         [0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0]];
+
+    level = [5, 5, 5, 5, 5, 5, 5];
+
+    turn = false;
+
+    won = false;
+
+    canMove = true;
 }
 
 function createBoxes() {
@@ -64,13 +79,13 @@ function createBoxes() {
     
 }
 
-function move(col) {
+async function move(col) {
     "use strict";
     // don't let move if invalid move or game is over
     if (level[col] < 0 || won) { return; }
 
     // don't let move for the computer
-    if (players == 1 && turn == -1) { return; }
+    if (players == 1 && turn) { return; }
 
     add_piece_to_board(col, (turn ? "blue" : "red"));
 
@@ -86,6 +101,7 @@ function move(col) {
 
     // move for the computer
     if (players == 1) {
+        await sleep(500);
         aiMove();
     }
 }
@@ -108,10 +124,8 @@ function inBounds(row, col) {
 
 // checks if a player has won
 function checkWin(row, col) {
-    const directions = [[1, -1], [1, 0], [1, 1], [0, 1]];
-    for (let i = 0; i < directions.length; i++) {
-        // check for in-bounds in each direction before checking
-        if (checkWinCondition(row, col, directions[i][0], directions[i][1])) {
+    for (let i = 0; i < SEARCH_DIRECTIONS.length; i++) {
+        if (checkWinCondition(row, col, SEARCH_DIRECTIONS[i][0], SEARCH_DIRECTIONS[i][1])) {
             return true;
         }
     }
@@ -167,47 +181,102 @@ function checkWinCondition(row, col, x, y) {
 
 }
 
-function win(row, col) {
+async function win(row, col) {
     "use strict";
     won = true;
-    let winner = board[row][col] == 1 ? "Blue" : "Red";
+    const winner = board[row][col] == 1 ? "Blue" : "Red";
+    const loser = board[row][col] == 1 ? "Red" : "Blue";
 
-    // highlight winning combination
-    let winning_pieces = document.getElementsByClassName(winner.toLowerCase());
-    for (let i = 0; i < winning_pieces.length; i++) {
-        // winning_pieces[i].classList.remove("red");
+    // fade non-winning combination
+    const winning_pieces = find_winning_combination(row, col);
+    let non_winning_pieces = document.getElementsByClassName("piece");
+    for (let i = non_winning_pieces.length - 1; i >= 0; i--) {
+        // skip winning pieces
+        if (winning_pieces.includes(non_winning_pieces[i].id)) {
+            continue;
+        }
+        // skip hidden pieces
+        if (non_winning_pieces[i].style.opacity = "0") {
+            continue;
+        }
+        non_winning_pieces[i].style.transition = "all 4.5s ease";
+        non_winning_pieces[i].style.opacity = "0.2";
     }
-    // hide non-winning combination
 
+    // wait for animations
+    await sleep(2500);
 
+    // hide board
+    document.getElementById("board").style.opacity = "0";
+    document.getElementById("board").style.visibility = "hidden";
 
     // add popup to play again
     document.getElementById("popup-header").innerHTML = `${winner} Wins!!!`
     document.getElementById("popup-header").style.color = winner === "Red" ? "#FD8A8A" : "#9EA1D4";
 
+    // wait for animations
+    await sleep(2500);
+
+    // delete board html
+    document.getElementById("board").innerHTML = "";
+
     showPopups();
+
+    // wait for animations last time
+    await sleep(2000);
+    
+    // reenable popup buttons
+    document.getElementById("popup-container").style.pointerEvents = "auto";
+
+    // reset transition changes
+    document.getElementById("popup-container").style.transition = "all 0.5s ease;";
 }
 
 function showPopups() {
     document.getElementById("popup-container").style.transition = "all 4.5s ease";
     document.getElementById("popup-container").style.visibility = "visible";
-    document.getElementById("popup-container").style.opacity = "0.9";
+    document.getElementById("popup-container").style.opacity = "1";
 
-    document.getElementById("one-player-button").style.opacity = "0.9";
-    document.getElementById("two-player-button").style.opacity = "0.9";
-
-    // disable buttons
-    document.getElementById("one-player-button").onclick = "start(1)";
-    document.getElementById("two-player-button").onclick = "start(2)";
+    document.getElementById("one-player-button").style.opacity = "1";
+    document.getElementById("two-player-button").style.opacity = "1";
 }
 
-function find_winning_combination() {
+function find_winning_combination(row, col) {
+    let i;
     
+    // find which direction was the winning direction
+    for (i = 0; i < SEARCH_DIRECTIONS.length; i++) {
+        if (checkWinCondition(row, col, SEARCH_DIRECTIONS[i][0], SEARCH_DIRECTIONS[i][1])) {
+            break;
+        }
+    }
+
+    // find pieces associated with win
+    let list_of_pieces = [`row${row}col${col}-piece`];
+    let counter = 1;
+    // expand in positive and negative directions
+    for (let j = 1; j <= 3; j++) {
+        for (let k of [-1, 1]) {
+            let temp_row = row + (k * j * SEARCH_DIRECTIONS[i][1]);
+            let temp_col = col + (k * j * SEARCH_DIRECTIONS[i][0]);
+            // check if part of winning combination
+            if (inBounds(temp_row, temp_col) && board[temp_row][temp_col] == board[row][col]) {
+                counter++;
+                list_of_pieces.push(`row${temp_row}col${temp_col}-piece`);
+
+                if (counter == 4) {
+                    return list_of_pieces;
+                }
+            }
+        }
+    }
+
+    return [];
 }
 
 
 function aiMove() {
-    let col = find_best_move(4);
+    let col = find_best_move(SEARCH_DEPTH);
 
     add_piece_to_board(col, "blue")
 
@@ -241,11 +310,6 @@ function find_best_max_move(alpha, beta, depth) {
 
     // find the best score
     for (let i of [3, 2, 4, 1, 5, 0, 6]) {
-        // alpha-beta pruning
-        if (alpha >= beta) {
-            return [best_col, max_val];
-        }
-
         // skip columns that are full
         if (board[0][i] != 0) {
             continue;
@@ -275,6 +339,18 @@ function find_best_max_move(alpha, beta, depth) {
         level[i]++;
         board[level[i]][i] = 0;
         turn = !turn;
+
+        if (depth == SEARCH_DEPTH) {
+            console.log(`Column: ${i}, Weight: ${move_val}`);
+        }
+
+        // alpha-beta pruning
+        // if (alpha >= beta) {
+        //     break;
+        // }
+    }
+    if (depth == SEARCH_DEPTH) {
+        console.log(``);
     }
 
     if (best_col == -1) {
@@ -299,11 +375,6 @@ function find_best_min_move(alpha, beta, depth) {
 
     // find the best score
     for (let i of [3, 2, 4, 1, 5, 0, 6]) {
-        // alpha-beta pruning
-        if (alpha >= beta) {
-            return [best_col, min_val];
-        }
-        
         // skip columns that are full
         if (board[0][i] != 0) {
             continue;
@@ -333,6 +404,11 @@ function find_best_min_move(alpha, beta, depth) {
         level[i]++;
         board[level[i]][i] = 0;
         turn = !turn;
+
+        // alpha-beta pruning
+        // if (alpha >= beta) {
+        //     break;
+        // }
     }
 
     if (best_col == -1) {
@@ -346,7 +422,6 @@ function find_best_min_move(alpha, beta, depth) {
 
 // calculates current game score
 function calculate_score() {
-    const directions = [[1, -1], [1, 0], [1, 1], [0, 1]];
 
     let score = 0;
     for (let row = 0; row <= 5; row++) {
@@ -355,8 +430,8 @@ function calculate_score() {
                 continue;
             }
 
-            for (let i = 0; i < directions.length; i++) {
-                add = score_possible(row, col, directions[i][0], directions[i][1], 1);
+            for (let i = 0; i < SEARCH_DIRECTIONS.length; i++) {
+                let add = score_possible(row, col, SEARCH_DIRECTIONS[i][0], SEARCH_DIRECTIONS[i][1], 1);
                 // console.log(directions[i]);
                 // console.log(`row: ${row}, col: ${col}`);
                 // console.log(`added ${add}`);
