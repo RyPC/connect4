@@ -41,6 +41,9 @@ body {
     width: calc(50vw / 7);
     height: calc(50vw / 7);
 }
+.selected {
+    background-color: darkgrey;
+}
 .piece {
     border-radius: 50%;
     display: inline-block;

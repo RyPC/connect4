@@ -1,6 +1,6 @@
 //  script.js
 
-const SEARCH_DEPTH = 5;
+const SEARCH_DEPTH = 7;
 const SEARCH_DIRECTIONS = [[1, -1], [1, 0], [1, 1], [0, 1]];
 
 //true - blue, false - red
@@ -8,7 +8,6 @@ var turn = false;
 var board, players;
 var level;
 var won = false;
-var canMove;
 
 function start(p) {
     "use strict";
@@ -56,8 +55,6 @@ function resetBoard() {
     turn = false;
 
     won = false;
-
-    canMove = true;
 }
 
 function createBoxes() {
@@ -66,17 +63,37 @@ function createBoxes() {
 
     for (let i = 0; i < 6; i++) {
         for (let j = 0; j < 7; j++) {
-            html+= `<div onclick="move(${j});" id="row${i}col${j}" class="square">
+            html+= `<div
+                        onclick="move(${j});"
+                        id="row${i}col${j}"
+                        class="square"
+                        onmouseover="highlight(${j});"
+                        onmouseout="unhighlight(${j});"
+                    >
+                        
                         <div 
                             style="transform: translate(calc(50vw / 7 / 8), calc(50vw / 7 * ${-i * 1 + 0.125}));" 
-                            class="piece" id="row${i}col${j}-piece">
-                        </div>
+                            class="piece" id="row${i}col${j}-piece"
+                        ></div>
+
                     </div>`;
         }
     }
 
     document.getElementById("board").innerHTML = html;
     
+}
+
+function highlight(col) {
+    if (won) {
+        return;
+    }
+    let square = document.getElementById(`row${level[col]}col${col}`);
+    square.classList.add("selected");
+}
+function unhighlight(col) {
+    let square = document.getElementById(`row${level[col]}col${col}`);
+    square.classList.remove("selected");
 }
 
 async function move(col) {
@@ -87,6 +104,8 @@ async function move(col) {
     // don't let move for the computer
     if (players == 1 && turn) { return; }
 
+
+    unhighlight(col);
     add_piece_to_board(col, (turn ? "blue" : "red"));
 
     // check if any player has won
@@ -98,6 +117,8 @@ async function move(col) {
     // set up for next turn
     turn = !turn;
     level[col]--;
+
+    highlight(col);
 
     // move for the computer
     if (players == 1) {
@@ -278,6 +299,10 @@ function find_winning_combination(row, col) {
 function aiMove() {
     let col = find_best_move(SEARCH_DEPTH);
 
+    // remove highlight from square
+    unhighlight(col);
+
+    
     add_piece_to_board(col, "blue")
 
     // check if any player has won
