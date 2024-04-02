@@ -38,6 +38,7 @@ body {
     float: left;
     align-content: center;
 
+    /* Size: 1/7 of half of view width */
     width: calc(50vw / 7);
     height: calc(50vw / 7);
 }
@@ -49,6 +50,7 @@ body {
     display: inline-block;
     box-shadow: inset 0px 0px 10px 5px white;
 
+    /* Size: 3/4 of square */
     width: calc(50vw / 7 * 3 / 4);
     height: calc(50vw / 7 * 3 / 4);
 

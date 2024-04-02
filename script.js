@@ -1,6 +1,9 @@
 //  script.js
 
-const SEARCH_DEPTH = 7;
+var scores = 0;
+
+const ALPHA_BETA = false;
+const SEARCH_DEPTH = 2;
 const SEARCH_DIRECTIONS = [[1, -1], [1, 0], [1, 1], [0, 1]];
 
 //true - blue, false - red
@@ -61,8 +64,8 @@ function createBoxes() {
     "use strict";
     let html = "";
 
-    for (let i = 0; i < 6; i++) {
-        for (let j = 0; j < 7; j++) {
+    for (let i = 0; i < 6; i++) {       // i = row
+        for (let j = 0; j < 7; j++) {   // j = col
             html+= `<div
                         onclick="move(${j});"
                         id="row${i}col${j}"
@@ -72,8 +75,9 @@ function createBoxes() {
                     >
                         
                         <div 
-                            style="transform: translate(calc(50vw / 7 / 8), calc(50vw / 7 * ${-i * 1 + 0.125}));" 
-                            class="piece" id="row${i}col${j}-piece"
+                            style="transform: translate(calc(50vw / 7 / 8), calc(50vw / 7 * ${-i}));" 
+                            id="row${i}col${j}-piece"
+                            class="piece"
                         ></div>
 
                     </div>`;
@@ -131,7 +135,7 @@ function add_piece_to_board(col, color) {
     // add piece to visual board
     document.getElementById(`row${level[col]}col${col}-piece`).classList.add(color);
     document.getElementById(`row${level[col]}col${col}-piece`).style.opacity = 1;
-    document.getElementById(`row${level[col]}col${col}-piece`).style.transform = "translate(calc(50vw / 7 / 8), calc(50vw / 7 / 8))";
+    document.getElementById(`row${level[col]}col${col}-piece`).style.transform = "translate(calc(50vw / 7 / 8), 0)";
     
     // add piece to board in code
     board[level[col]][col] = turn ? 1 : -1;    
@@ -365,18 +369,18 @@ function find_best_max_move(alpha, beta, depth) {
         board[level[i]][i] = 0;
         turn = !turn;
 
-        if (depth == SEARCH_DEPTH) {
-            console.log(`Column: ${i}, Weight: ${move_val}`);
-        }
+        // if (depth == SEARCH_DEPTH) {
+        //     console.log(`Column: ${i}, Weight: ${move_val}`);
+        // }
 
         // alpha-beta pruning
-        // if (alpha >= beta) {
-        //     break;
-        // }
+        if (ALPHA_BETA && alpha >= beta) {
+            break;
+        }
     }
-    if (depth == SEARCH_DEPTH) {
-        console.log(``);
-    }
+    // if (depth == SEARCH_DEPTH) {
+    //     console.log(``);
+    // }
 
     if (best_col == -1) {
         return 0;
@@ -431,9 +435,9 @@ function find_best_min_move(alpha, beta, depth) {
         turn = !turn;
 
         // alpha-beta pruning
-        // if (alpha >= beta) {
-        //     break;
-        // }
+        if (ALPHA_BETA && alpha >= beta) {
+            break;
+        }
     }
 
     if (best_col == -1) {
@@ -466,6 +470,8 @@ function calculate_score() {
 
         }
     }
+    scores+= 1;
+    console.log(`#${scores}: ${score}`);
     return score;
 }
 
