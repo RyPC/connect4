@@ -1,9 +1,7 @@
 //  script.js
 
-var scores = 0;
-
-const ALPHA_BETA = false;
-const SEARCH_DEPTH = 2;
+const ALPHA_BETA = true;
+const SEARCH_DEPTH = 4;
 const SEARCH_DIRECTIONS = [[1, -1], [1, 0], [1, 1], [0, 1]];
 
 //true - blue, false - red
@@ -89,13 +87,16 @@ function createBoxes() {
 }
 
 function highlight(col) {
-    if (won) {
+    if (won || level[col] < 0) {
         return;
     }
     let square = document.getElementById(`row${level[col]}col${col}`);
     square.classList.add("selected");
 }
 function unhighlight(col) {
+    if (level[col] < 0) {
+        return;
+    }
     let square = document.getElementById(`row${level[col]}col${col}`);
     square.classList.remove("selected");
 }
@@ -301,6 +302,7 @@ function find_winning_combination(row, col) {
 
 
 function aiMove() {
+    console.log("");
     let col = find_best_move(SEARCH_DEPTH);
 
     // remove highlight from square
@@ -330,7 +332,10 @@ function find_best_move(depth) {
 function find_best_max_move(alpha, beta, depth) {
     if (depth == 0) {
         // return heuristic score of board
-        return [-1, calculate_score()];
+        let score = calculate_score();
+        console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}MAX - Depth ${depth}: ${score}`);
+        console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}A: ${alpha}, B: ${beta}`);
+        return [-1, score];
     }
 
     // sets the first move to column 0
@@ -349,12 +354,15 @@ function find_best_max_move(alpha, beta, depth) {
         if (checkWin(level[i], i)) {
             // unexecute move
             board[level[i]][i] = 0;
-            return [i, (100000 * depth)];
+            console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}MAX - Depth ${depth}: ${depth * 100_000}`);
+            console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}A: ${alpha}, B: ${beta}`);
+            return [i, (depth * 100_000)];
         }
         level[i]--;
         turn = !turn;
 
 
+        console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}Dropping column ${i}`);
         let move_val = find_best_min_move(alpha, beta, depth - 1)[1];
         if (move_val >= max_val) {
             best_col = i;
@@ -386,6 +394,8 @@ function find_best_max_move(alpha, beta, depth) {
         return 0;
     }
 
+    console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}MAX - Depth ${depth}: ${max_val}`);
+    console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}A: ${alpha}, B: ${beta}`);
     return [best_col, max_val];
 
 }
@@ -395,7 +405,10 @@ function find_best_max_move(alpha, beta, depth) {
 function find_best_min_move(alpha, beta, depth) {
     if (depth == 0) {
         // return heuristic score of board
-        return [-1, calculate_score()];
+        let score = calculate_score();
+        console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}MIN - Depth ${depth}: ${score}`);
+        console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}A: ${alpha}, B: ${beta}`);
+        return [-1, score];
     }
 
     // sets the first move to column 0
@@ -414,12 +427,15 @@ function find_best_min_move(alpha, beta, depth) {
         if (checkWin(level[i], i)) {
             // unexecute move
             board[level[i]][i] = 0;
-            return [i, (-100000 * depth)];
+            console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}MIN - Depth ${depth}: ${-depth * 100_000}`);
+            console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}A: ${alpha}, B: ${beta}`);
+            return [i, (-depth * 100_000)];
         }
         level[i]--;
         turn = !turn;
 
 
+        console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}Dropping column ${i}`);
         let move_val = find_best_max_move(alpha, beta, depth - 1)[1];
         if (move_val <= min_val) {
             best_col = i;
@@ -436,6 +452,7 @@ function find_best_min_move(alpha, beta, depth) {
 
         // alpha-beta pruning
         if (ALPHA_BETA && alpha >= beta) {
+            console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}PRUNING`);
             break;
         }
     }
@@ -444,6 +461,8 @@ function find_best_min_move(alpha, beta, depth) {
         return 0;
     }
 
+    console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}MIN - Depth ${depth}: ${min_val}`);
+    console.log(`${"\t".repeat(SEARCH_DEPTH - depth)}A: ${alpha}, B: ${beta}`);
     return [best_col, min_val];
 
 }
@@ -470,8 +489,6 @@ function calculate_score() {
 
         }
     }
-    scores+= 1;
-    console.log(`#${scores}: ${score}`);
     return score;
 }
 
@@ -483,6 +500,8 @@ function score_possible(row, col, x, y) {
     // booleans on if to explore in either direction
     let pos_explore = true;
     let neg_explore = true;
+    let pos_explore_pot = true;
+    let neg_explore_pot = true;
 
     let pos_value = 0;
     let pos_value_pot = 0;
@@ -502,6 +521,7 @@ function score_possible(row, col, x, y) {
             else if (board[row + (y * i)][col + (x * i)] == 0) {
                 pos_value_pot++;
             }
+            // if opposite piece, stop exploring
             else {
                 pos_explore = false;
             }
@@ -518,6 +538,7 @@ function score_possible(row, col, x, y) {
             else if (board[row - (y * i)][col - (x * i)] == 0) {
                 neg_value_pot++;
             }
+            // if opposite piece, stop exploring
             else {
                 neg_explore = false;
             }
@@ -526,7 +547,7 @@ function score_possible(row, col, x, y) {
 
     let total = 0;
     if (pos_value + neg_value + 1 >= 4) {
-        return board[row][col] * Infinity;
+        total+= ((pos_value + neg_value + 1) * 10) ** 2;
     }
     if (pos_value_pot + neg_value_pot + 1 >= 4) {
         total+= ((pos_value + neg_value + 1) * 3) ** 2;
